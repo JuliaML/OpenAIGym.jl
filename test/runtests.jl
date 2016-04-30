@@ -16,7 +16,9 @@ for i=1:1
     for t in 1:100
 
         # update the view
-        display(env)
+        if isinteractive()
+            display(env)
+        end
 
         # random aciton
         action = rand(env)

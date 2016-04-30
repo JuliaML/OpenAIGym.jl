@@ -4,26 +4,20 @@
 
 #### Author: Thomas Breloff (@tbreloff)
 
-This wraps the open source python library `gym`, released by OpenAI.  See [their website](https://gym.openai.com/) for more information.
+This wraps the open source python library `gym`, released by OpenAI.  See [their website](https://gym.openai.com/) for more information.  Collaboration welcome!
 
-The following python example:
+### Setup
 
-```python
-import gym
-env = gym.make('CartPole-v0')
-for i_episode in xrange(20):
-    observation = env.reset()
-    for t in xrange(100):
-        env.render()
-        print observation
-        action = env.action_space.sample()
-        observation, reward, done, info = env.step(action)
-        if done:
-            print "Episode finished after {} timesteps".format(t+1)
-            break
+First install `gym`. Follow the instructions [here](https://gym.openai.com/docs).
+
+Then add this julia package:
+
+```julia
+Pkg.clone("https://github.com/tbreloff/OpenAIGym.jl.git")
+using OpenAIGym
 ```
 
-can be run in OpenAIGym.jl:
+### Hello world!
 
 ```julia
 env = Env("CartPole-v0")
@@ -41,6 +35,23 @@ for i=1:20
     end
 end
 ```
+
+Note: this is equivalent to the python code:
+```python
+import gym
+env = gym.make('CartPole-v0')
+for i_episode in xrange(20):
+    observation = env.reset()
+    for t in xrange(100):
+        env.render()
+        print observation
+        action = env.action_space.sample()
+        observation, reward, done, info = env.step(action)
+        if done:
+            print "Episode finished after {} timesteps".format(t+1)
+            break
+```
+
 
 If everything works, a gui window will pop up with a tipping cart pole, and you should see output like:
 
