@@ -26,7 +26,7 @@ for i=1:20
     for t in 1:100
         display(env)
         @show state
-        action = rand(env)
+        action = rand(env)  # choose wisely!
         state = step(env, action)
         if state.done
             info("Episode finished after $t timesteps")
