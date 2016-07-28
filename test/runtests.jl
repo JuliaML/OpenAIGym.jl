@@ -5,32 +5,38 @@ using Base.Test
 @test 1 == 1
 
 
-env = Env("CartPole-v0")
-for i=1:1
-
-    # initialize the episode
-    state = reset(env)
-    @show state
-
-    # loop through timesteps
-    for t in 1:100
-
-        # update the view
-        if isinteractive()
-            display(env)
-        end
-
-        # random aciton
-        action = rand(env)
-        state = step(env, action)
-        @show action, state
-
-        if state.done
-            info("Episode finished after $t timesteps")
-            break
-        end
-    end
+env = GymEnv("CartPole-v0")
+for i=1:5
+    R, T = episode!(env, RandomPolicy(), i)
+    info("Episode $i finished after $T steps. Total reward: $R")
 end
+
+
+# for i=1:1
+
+#     # initialize the episode
+#     state = reset(env)
+#     @show state
+
+#     # loop through timesteps
+#     for t in 1:100
+
+#         # update the view
+#         if isinteractive()
+#             display(env)
+#         end
+
+#         # random aciton
+#         action = rand(env)
+#         state = step(env, action)
+#         @show action, state
+
+#         if state.done
+#             info("Episode finished after $t timesteps")
+#             break
+#         end
+#     end
+# end
 
 
 # similar to:

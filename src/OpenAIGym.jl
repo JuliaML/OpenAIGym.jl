@@ -3,61 +3,77 @@
 
 module OpenAIGym
 
+using Reexport
 using PyCall
+@reexport using Reinforce
 
 export
     gym,
-    Env,
-    State,
-    action_space
+    GymEnv
 
 # --------------------------------------------------------------
 
-type Env
-    name
+"A simple wrapper around the OpenAI gym environments to add to the Reinforce framework"
+type GymEnv <: AbstractEnvironment
+    name::String
     env
+    should_reset::Bool
+    state
+    reward::Float64
+    actions::AbstractActionSet
+    info::Dict
+    GymEnv(name::AbstractString) = new(name, gym.make(name), true)
 end
-Env(name::AbstractString) = Env(name, gym.make(name))
 
 # --------------------------------------------------------------
 
-"show the state (gui or whatever is supported)"
-Base.display(env::Env) = env.env[:render]()
-
-action_space(env::Env) = env.env[:action_space]
+render(env::GymEnv) = env.env[:render]()
 
 # --------------------------------------------------------------
 
-immutable State
-    observation
-    reward
+function Reinforce.reset!(env::GymEnv)
+    env.should_reset = true
+end
+
+
+# returns a
+function Reinforce.actions(env::GymEnv)
+    A = env.env[:action_space]
+    if haskey(A, :n)
+        DiscreteActionSet(0:A[:n]-1)
+    else
+        error()
+    end
+end
+
+function Reinforce.step!(env::GymEnv, policy::AbstractPolicy)
+    if env.should_reset
+        # reset the episode
+        env.state = env.env[:reset]()
+        env.reward = 0.0
+        env.should_reset = false
+        env.actions = actions(env)
+    end
+
+    # get an action from the policy
+    a = action(policy, env.reward, env.state, env.actions)
+
+    # apply the action and get the updated state/reward
+    env.state, env.reward, done, env.info = env.env[:step](a)
     done
-    info
 end
 
-# --------------------------------------------------------------
 
-"initializes a new episode"
-Base.reset(env::Env) = State(env.env[:reset](), 0.0, false, nothing)
+function Reinforce.on_step(env::GymEnv, i::Int)
+    # render(env)
+end
 
-
-"choose a random action"
-Base.rand(env::Env) = action_space(env)[:sample]()
-
-
-"returns a State object"
-Base.step(env::Env, action) = State(env.env[:step](action)...)
+Reinforce.reward(env::GymEnv) = env.reward
+Reinforce.reward!(env::GymEnv) = env.reward
+Reinforce.state(env::GymEnv) = env.state
+Reinforce.state!(env::GymEnv) = env.state
 
 # --------------------------------------------------------------
-
-# todo: iterate through an episode with something like:
-#   for (observation, reward, info) in env
-#       # choose an action
-#       act(env, action)
-#   end
-
-# todo: standardize the loop above with a macro `@episode`
-
 
 
 function __init__()
