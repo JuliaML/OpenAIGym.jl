@@ -30,7 +30,7 @@ Pkg.clone("https://github.com/tbreloff/Reinforce.jl.git")
 using OpenAIGym
 env = GymEnv("CartPole-v0")
 for i=1:20
-    R, T = episode!(env, RandomPolicy(), i)
+    R, T = episode!(env, RandomPolicy())
     info("Episode $i finished after $T steps. Total reward: $R")
 end
 ```
@@ -67,14 +67,16 @@ Note: this is equivalent to the python code:
 import gym
 env = gym.make('CartPole-v0')
 for i_episode in xrange(20):
+    total_reward = 0.0
     observation = env.reset()
     for t in xrange(100):
-        env.render()
-        print observation
+        # env.render()
+        # print observation
         action = env.action_space.sample()
         observation, reward, done, info = env.step(action)
+        total_reward += reward
         if done:
-            print "Episode finished after {} timesteps".format(t+1)
+            print "Episode {} finished after {} timesteps. Total reward: {}".format(i_episode, t+1, total_reward)
             break
 ```
 

@@ -17,12 +17,16 @@ export
 type GymEnv <: AbstractEnvironment
     name::String
     env
-    should_reset::Bool
+    # should_reset::Bool
     state
     reward::Float64
     actions::AbstractActionSet
     info::Dict
-    GymEnv(name::AbstractString) = new(name, gym.make(name), true)
+    function GymEnv(name::AbstractString)
+        env = new(name, gym.make(name)) #, true)
+        reset!(env)
+        env
+    end
 end
 
 # --------------------------------------------------------------
@@ -32,7 +36,11 @@ render(env::GymEnv) = env.env[:render]()
 # --------------------------------------------------------------
 
 function Reinforce.reset!(env::GymEnv)
-    env.should_reset = true
+    # env.should_reset = true
+    env.state = env.env[:reset]()
+    env.reward = 0.0
+    # env.should_reset = false
+    env.actions = actions(env)
 end
 
 
@@ -46,14 +54,14 @@ function Reinforce.actions(env::GymEnv)
     end
 end
 
-function Reinforce.step!(env::GymEnv, policy::AbstractPolicy)
-    if env.should_reset
-        # reset the episode
-        env.state = env.env[:reset]()
-        env.reward = 0.0
-        env.should_reset = false
-        env.actions = actions(env)
-    end
+function Reinforce.step!(env::GymEnv, policy::AbstractPolicy = RandomPolicy())
+    # if env.should_reset
+    #     # reset the episode
+    #     env.state = env.env[:reset]()
+    #     env.reward = 0.0
+    #     env.should_reset = false
+    #     env.actions = actions(env)
+    # end
 
     # get an action from the policy
     a = action(policy, env.reward, env.state, env.actions)
