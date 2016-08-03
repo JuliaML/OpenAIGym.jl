@@ -23,7 +23,7 @@ type GymEnv <: AbstractEnvironment
     actions::AbstractActionSet
     info::Dict
     function GymEnv(name::AbstractString)
-        env = new(name, gym.make(name)) #, true)
+        env = new(name, gym[:make](name)) #, true)
         reset!(env)
         env
     end
@@ -55,14 +55,6 @@ function Reinforce.actions(env::GymEnv)
 end
 
 function Reinforce.step!(env::GymEnv, policy::AbstractPolicy = RandomPolicy())
-    # if env.should_reset
-    #     # reset the episode
-    #     env.state = env.env[:reset]()
-    #     env.reward = 0.0
-    #     env.should_reset = false
-    #     env.actions = actions(env)
-    # end
-
     # get an action from the policy
     a = action(policy, env.reward, env.state, env.actions)
 
@@ -85,7 +77,7 @@ Reinforce.state!(env::GymEnv) = env.state
 
 
 function __init__()
-    global const gym = PyCall.pywrap(PyCall.pyimport("gym"))
+    global const gym = pyimport("gym")
 end
 
 end # module
