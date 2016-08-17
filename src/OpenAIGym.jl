@@ -20,7 +20,7 @@ type GymEnv <: AbstractEnvironment
     # should_reset::Bool
     state
     reward::Float64
-    actions::AbstractActionSet
+    actions::AbstractSet
     info::Dict
     function GymEnv(name::AbstractString)
         env = new(name, gym[:make](name)) #, true)
@@ -48,7 +48,7 @@ end
 function Reinforce.actions(env::GymEnv)
     A = env.env[:action_space]
     if haskey(A, :n)
-        DiscreteActionSet(0:A[:n]-1)
+        DiscreteSet(0:A[:n]-1)
     else
         error()
     end
