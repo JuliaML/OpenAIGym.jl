@@ -17,13 +17,13 @@ export
 type GymEnv <: AbstractEnvironment
     name::String
     env
-    # should_reset::Bool
     state
     reward::Float64
     actions::AbstractSet
+    done::Bool
     info::Dict
     function GymEnv(name::AbstractString)
-        env = new(name, gym[:make](name)) #, true)
+        env = new(name, gym[:make](name))
         reset!(env)
         env
     end
@@ -31,21 +31,20 @@ end
 
 # --------------------------------------------------------------
 
-render(env::GymEnv) = env.env[:render]()
+render(env::GymEnv, args...) = env.env[:render]()
 
 # --------------------------------------------------------------
 
 function Reinforce.reset!(env::GymEnv)
-    # env.should_reset = true
     env.state = env.env[:reset]()
     env.reward = 0.0
-    # env.should_reset = false
-    env.actions = actions(env)
+    env.actions = actions(env, nothing)
+    env.done = false
 end
 
 
 # returns a
-function Reinforce.actions(env::GymEnv)
+function Reinforce.actions(env::GymEnv, s′)
     A = env.env[:action_space]
     if haskey(A, :n)
         DiscreteSet(0:A[:n]-1)
@@ -54,24 +53,16 @@ function Reinforce.actions(env::GymEnv)
     end
 end
 
-function Reinforce.step!(env::GymEnv, policy::AbstractPolicy = RandomPolicy())
-    # get an action from the policy
-    a = action(policy, env.reward, env.state, env.actions)
-
-    # apply the action and get the updated state/reward
-    env.state, env.reward, done, env.info = env.env[:step](a)
-    done
+function Reinforce.step!(env::GymEnv, s, a)
+    s′, r, env.done, env.info = env.env[:step](a)
+    env.reward, env.state = r, s′
 end
 
+Reinforce.finished(env::GymEnv, s′) = env.done
 
-function Reinforce.on_step(env::GymEnv, i::Int)
-    # render(env)
-end
-
-Reinforce.reward(env::GymEnv) = env.reward
-Reinforce.reward!(env::GymEnv) = env.reward
-Reinforce.state(env::GymEnv) = env.state
-Reinforce.state!(env::GymEnv) = env.state
+# function Reinforce.on_step(env::GymEnv, i::Int)
+#     # render(env)
+# end
 
 # --------------------------------------------------------------
 

@@ -7,7 +7,7 @@ using Base.Test
 
 env = GymEnv("CartPole-v0")
 for i=1:5
-    R, T = episode!(env, RandomPolicy(), i)
+    R, T = episode!(env, RandomPolicy())
     info("Episode $i finished after $T steps. Total reward: $R")
 end
 
