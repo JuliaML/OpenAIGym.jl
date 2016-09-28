@@ -26,10 +26,14 @@ type GymEnv <: AbstractEnvironment
     done::Bool
     info::Dict
     function GymEnv(name::AbstractString)
-        if name == "Soccer-v0" && !haskey(_py_envs, name)
-            _py_envs[name] = @pyimport gym_soccer
+        env = if name in ("Soccer-v0", "SoccerEmptyGoal-v0")
+            @pyimport gym_soccer
+            get!(_py_envs, name) do
+                new(name, gym[:make](name))
+            end
+        else
+            new(name, gym[:make](name))
         end
-        env = new(name, gym[:make](name))
         reset!(env)
         env
     end
@@ -77,7 +81,7 @@ function Reinforce.actions(env::GymEnv, s′)
 end
 
 function Reinforce.step!(env::GymEnv, s, a)
-    info("Going to take action: $a")
+    # info("Going to take action: $a")
     s′, r, env.done, env.info = env.env[:step](a)
     env.reward, env.state = r, s′
 end
