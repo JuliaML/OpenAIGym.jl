@@ -3,6 +3,7 @@
 
 module OpenAIGym
 
+
 using Reexport
 using PyCall
 @reexport using Reinforce
@@ -10,6 +11,8 @@ using PyCall
 export
     gym,
     GymEnv
+
+const _py_envs = Dict{String,Any}()
 
 # --------------------------------------------------------------
 
@@ -23,6 +26,9 @@ type GymEnv <: AbstractEnvironment
     done::Bool
     info::Dict
     function GymEnv(name::AbstractString)
+        if name == "Soccer-v0" && !haskey(_py_envs, name)
+            _py_envs[name] = @pyimport gym_soccer
+        end
         env = new(name, gym[:make](name))
         reset!(env)
         env
@@ -46,6 +52,7 @@ end
 # returns a
 function Reinforce.actions(env::GymEnv, s′)
     A = env.env[:action_space]
+    # @show A
     if haskey(A, :n)
         DiscreteSet(0:A[:n]-1)
     else

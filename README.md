@@ -6,22 +6,6 @@
 
 This wraps the open source python library `gym`, released by OpenAI.  See [their website](https://gym.openai.com/) for more information.  Collaboration welcome!
 
-### Setup
-
-First install `gym`. Follow the instructions [here](https://gym.openai.com/docs).
-
-Then add this julia package:
-
-```julia
-Pkg.clone("https://github.com/tbreloff/OpenAIGym.jl.git")
-```
-
-until it's registered, you'll also need to manually install [Reinforce.jl](https://github.com/tbreloff/Reinforce.jl):
-
-```julia
-Pkg.clone("https://github.com/tbreloff/Reinforce.jl.git")
-```
-
 ---
 
 ### Hello world!
@@ -83,11 +67,86 @@ for i_episode in xrange(20):
 
 ---
 
-We're using the `RandomPolicy` from Reinforce.jl.  To do something better, you can create your own policy simply by implementing the `action` method, which takes a reward, a state, and an action set:
+We're using the `RandomPolicy` from Reinforce.jl.  To do something better, you can create your own policy simply by implementing the `action` method, which takes a reward, a state, and an action set, then returns an action selection:
 
 ```julia
 type RandomPolicy <: AbstractPolicy end
 Reinforce.action(policy::AbstractPolicy, r, s, A) = rand(A)
 ```
 
-Note: You can override default behavior of in the `episode!` method by overriding `Reinforce.on_step(env, i)`.
+Note: You can override default behavior of in the `episode!` method by overriding `Reinforce.on_step(env, i, sars)` or by passing your own `stepfunc`.  You could also just iterate yourself:
+
+```julia
+ep = Episode(env, policy)
+for (s, a, r, s′) in ep
+    # do something special?
+    OpenAIGym.render(env)
+end
+R = ep.total_reward
+N = ep.niter
+```
+
+---
+
+### Install gym
+
+First install `gym`. Follow the instructions [here](https://gym.openai.com/docs) if you're using a system-wide python, or to use Conda.jl:
+
+```julia
+Pkg.add("PyCall")
+withenv("PYTHON" => "") do
+   Pkg.build("PyCall")
+end
+```
+
+then install gym from the command line:
+
+```
+cd /opt
+git clone https://github.com/openai/gym
+cd gym
+~/.julia/v0.5/Conda/deps/usr/bin/pip install -e .[all]
+```
+
+For additional environments, use a similar process.  For example, here's how I installed [Soccer](https://github.com/openai/gym-soccer) on my Ubuntu machine:
+
+```
+cd /opt
+git clone https://github.com/LARG/HFO
+cd HFO
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j4
+make install
+
+cd /opt
+git clone https://github.com/openai/gym-soccer
+cd gym-soccer
+~/.julia/v0.5/Conda/deps/usr/bin/pip install -e .
+```
+
+
+### Install OpenAIGym and Reinforce
+
+The easiest way to get started is with [MetaPkg](https://github.com/tbreloff/MetaPkg.jl):
+
+```julia
+Pkg.clone("https://github.com/tbreloff/MetaPkg.jl")
+using MetaPkg
+MetaPkg.add("MetaRL")
+```
+
+which will install OpenAIGym, [Reinforce.jl](https://github.com/tbreloff/Reinforce.jl), the [JuliaML](https://github.com/JuliaML) Learn ecosystem, and the [Plots](https://github.com/tbreloff/Plots.jl) ecosystem.
+
+
+To do this manually, add this julia package:
+
+```julia
+Pkg.clone("https://github.com/tbreloff/OpenAIGym.jl.git")
+```
+
+and until it's registered in METADATA, you'll also need to manually install [Reinforce.jl](https://github.com/tbreloff/Reinforce.jl):
+
+```julia
+Pkg.clone("https://github.com/tbreloff/Reinforce.jl.git")
+```
