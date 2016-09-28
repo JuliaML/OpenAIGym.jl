@@ -136,10 +136,10 @@ using MetaPkg
 MetaPkg.add("MetaRL")
 ```
 
-which will install OpenAIGym, [Reinforce.jl](https://github.com/tbreloff/Reinforce.jl), the [JuliaML](https://github.com/JuliaML) Learn ecosystem, and the [Plots](https://github.com/tbreloff/Plots.jl) ecosystem.
+which will install OpenAIGym, [Reinforce.jl](https://github.com/tbreloff/Reinforce.jl), and the [JuliaML](https://github.com/JuliaML) Learn ecosystem.  You might also want to install the [Plots](https://github.com/tbreloff/Plots.jl) ecosystem with `MetaPkg.add("MetaPlots")`.
 
 
-To do this manually, add this julia package:
+To do the install manually, add this julia package:
 
 ```julia
 Pkg.clone("https://github.com/tbreloff/OpenAIGym.jl.git")
