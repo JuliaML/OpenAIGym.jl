@@ -48,19 +48,36 @@ function Reinforce.reset!(env::GymEnv)
     env.done = false
 end
 
-
-# returns a
-function Reinforce.actions(env::GymEnv, s′)
-    A = env.env[:action_space]
-    # @show A
+function actionset(A::PyObject)
     if haskey(A, :n)
+        # choose from n actions
         DiscreteSet(0:A[:n]-1)
+    elseif haskey(A, :spaces)
+        # a tuple of action sets
+        sets = [actionset(a) for a in A[:spaces]]
+        TupleSet(sets...)
+    elseif haskey(A, :high)
+        # continuous interval
+        if A[:shape] == (1,)  # for now we only support 1-length vectors
+            IntervalSet(A[:low][1], A[:high][1])
+        else
+            @show A[:shape]
+            error("Unsupported shape for IntervalSet: $(A[:shape])")
+        end
     else
-        error()
+        @show A
+        @show keys(A)
+        error("Unknown actionset type: $A")
     end
 end
 
+
+function Reinforce.actions(env::GymEnv, s′)
+    actionset(env.env[:action_space])
+end
+
 function Reinforce.step!(env::GymEnv, s, a)
+    info("Going to take action: $a")
     s′, r, env.done, env.info = env.env[:step](a)
     env.reward, env.state = r, s′
 end
