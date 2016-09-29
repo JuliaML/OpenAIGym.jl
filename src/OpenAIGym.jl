@@ -10,7 +10,8 @@ using PyCall
 
 export
     gym,
-    GymEnv
+    GymEnv,
+    test_env
 
 const _py_envs = Dict{String,Any}()
 
@@ -19,7 +20,7 @@ const _py_envs = Dict{String,Any}()
 "A simple wrapper around the OpenAI gym environments to add to the Reinforce framework"
 type GymEnv <: AbstractEnvironment
     name::String
-    env
+    pyenv  # the python "env" object
     state
     reward::Float64
     actions::AbstractSet
@@ -41,12 +42,12 @@ end
 
 # --------------------------------------------------------------
 
-render(env::GymEnv, args...) = env.env[:render]()
+render(env::GymEnv, args...) = env.pyenv[:render]()
 
 # --------------------------------------------------------------
 
 function Reinforce.reset!(env::GymEnv)
-    env.state = env.env[:reset]()
+    env.state = env.pyenv[:reset]()
     env.reward = 0.0
     env.actions = actions(env, nothing)
     env.done = false
@@ -62,12 +63,15 @@ function actionset(A::PyObject)
         TupleSet(sets...)
     elseif haskey(A, :high)
         # continuous interval
-        if A[:shape] == (1,)  # for now we only support 1-length vectors
-            IntervalSet(A[:low][1], A[:high][1])
-        else
-            @show A[:shape]
-            error("Unsupported shape for IntervalSet: $(A[:shape])")
-        end
+        IntervalSet{Vector{Float64}}(A[:low], A[:high])
+        # if A[:shape] == (1,)  # for now we only support 1-length vectors
+        #     IntervalSet{Float64}(A[:low][1], A[:high][1])
+        # else
+        #     # @show A[:shape]
+        #     lo,hi = A[:low], A[:high]
+        #     # error("Unsupported shape for IntervalSet: $(A[:shape])")
+        #     [IntervalSet{Float64}(lo[i], hi[i]) for i=1:length(lo)]
+        # end
     else
         @show A
         @show keys(A)
@@ -77,12 +81,12 @@ end
 
 
 function Reinforce.actions(env::GymEnv, s′)
-    actionset(env.env[:action_space])
+    actionset(env.pyenv[:action_space])
 end
 
 function Reinforce.step!(env::GymEnv, s, a)
     # info("Going to take action: $a")
-    s′, r, env.done, env.info = env.env[:step](a)
+    s′, r, env.done, env.info = env.pyenv[:step](a)
     env.reward, env.state = r, s′
 end
 
@@ -91,6 +95,12 @@ Reinforce.finished(env::GymEnv, s′) = env.done
 # function Reinforce.on_step(env::GymEnv, i::Int)
 #     # render(env)
 # end
+
+function test_env(name::String = "CartPole-v0")
+    env = GymEnv(name)
+    episode!(env, RandomPolicy(), stepfunc = render)
+end
+
 
 # --------------------------------------------------------------
 

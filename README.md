@@ -125,6 +125,16 @@ cd gym-soccer
 ~/.julia/v0.5/Conda/deps/usr/bin/pip install -e .
 ```
 
+and here's how I installed the ones based on Box2D (for example BipedalWalker-v2) since it didn't work out of the box (due to [this issue](https://github.com/openai/gym/issues/100)):
+
+```
+~/.julia/v0.5/Conda/deps/usr/bin/pip uninstall box2d-py
+sudo apt-get install build-essential python-dev swig
+cd /opt/
+git clone https://github.com/pybox2d/pybox2d
+cd pybox2d/
+~/.julia/v0.5/Conda/deps/usr/bin/pip install -e .
+```
 
 ### Install OpenAIGym and Reinforce
 
