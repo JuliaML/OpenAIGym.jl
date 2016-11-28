@@ -32,6 +32,12 @@ type GymEnv <: AbstractEnvironment
             get!(_py_envs, name) do
                 new(name, gym[:make](name))
             end
+        elseif split(name, ".")[1] == "flashgames"
+            @pyimport universe
+            # PyCall.pyimport("universe")
+            get!(_py_envs, name) do
+                new(name, gym[:make](name))
+            end
         else
             new(name, gym[:make](name))
         end
