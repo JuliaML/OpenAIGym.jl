@@ -3,9 +3,8 @@
 
 module OpenAIGym
 
-
-using Reexport
 using PyCall
+using Reexport
 @reexport using Reinforce
 
 export
@@ -78,6 +77,22 @@ function actionset(A::PyObject)
         #     # error("Unsupported shape for IntervalSet: $(A[:shape])")
         #     [IntervalSet{Float64}(lo[i], hi[i]) for i=1:length(lo)]
         # end
+    elseif haskey(A, :buttonmasks)
+        # assumed VNC actions... keys to press, buttons to mask, and screen position
+        @show A[:keys]
+        ks = DiscreteSet(A[:keys])
+        @show ks
+        @show A[:buttonmasks]
+        bs = DiscreteSet(A[:buttonmasks])
+        @show bs
+        @show A[:screen_shape]
+        width,height = A[:screen_shape]
+        sw = IntervalSet{Int}(1, width)
+        sh = IntervalSet{Int}(1, height)
+        # ss = actionset(A[:screen_shape])
+        @show sw sh
+        # TupleSet(map(actionset, (A[:keys], A[:buttonmasks], A[:screen_shape]))...)
+        @show TupleSet(ks, bs, sw, sh)
     else
         @show A
         @show keys(A)
@@ -104,7 +119,10 @@ Reinforce.finished(env::GymEnv, s′) = env.done
 
 function test_env(name::String = "CartPole-v0")
     env = GymEnv(name)
-    episode!(env, RandomPolicy(), stepfunc = render)
+    for sars′ in Episode(env, RandomPolicy())
+        render(env)
+    end
+    # episode!(env, RandomPolicy(), stepfunc = render)
 end
 
 
@@ -112,6 +130,11 @@ end
 
 
 function __init__()
+    # due to a ssl library bug, I have to first load the ssl lib here
+    condadir = Pkg.dir("Conda","deps","usr","lib")
+    Libdl.dlopen(joinpath(condadir, "libssl.so"))
+    Libdl.dlopen(joinpath(condadir, "python2.7", "lib-dynload", "_ssl.so"))
+
     global const gym = pyimport("gym")
 end
 
