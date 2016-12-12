@@ -76,8 +76,10 @@ function gym(name::AbstractString)
         get!(_py_envs, name) do
             pyenv = wrappers.SafeActionSpace(pygym[:make](name))
             pyenv[:configure](remotes=1)  # automatically creates a local docker container
+            # pyenv[:configure](remotes="vnc://localhost:5900+15900")
             o = UniverseEnv(name, pyenv)
             # finalizer(o,  o.pyenv[:close]())
+            sleep(2)
             o
         end
     else
@@ -143,12 +145,8 @@ pyaction(a::MouseAction) = Any[vnc_event.PointerEvent(a.x, a.y, a.button)]
 pyaction(a) = a
 
 function Reinforce.step!(env::GymEnv, s, a)
-    info("Going to take action: $a")
+    # info("Going to take action: $a")
     pyact = pyaction(a)
-    if env.isuniverse
-        pyact = Any[pyact]
-    end
-    @show pyact
     s′, r, env.done, env.info = env.pyenv[:step](pyact)
     env.reward, env.state = r, s′
 end
@@ -156,7 +154,6 @@ end
 function Reinforce.step!(env::UniverseEnv, s, a)
     info("Going to take action: $a")
     pyact = Any[pyaction(a)]
-    @show pyact
     s′, r, env.done, env.info = env.pyenv[:step](pyact)
     env.reward, env.state = r, s′
 end
@@ -164,20 +161,17 @@ end
 Reinforce.finished(env::GymEnv, s′) = env.done
 Reinforce.finished(env::UniverseEnv, s′) = all(env.done)
 
-# function Reinforce.on_step(env::GymEnv, i::Int)
-#     # render(env)
-# end
+
+# --------------------------------------------------------------
+
 
 function test_env(name::String = "CartPole-v0")
     env = gym(name)
     for sars′ in Episode(env, RandomPolicy())
         render(env)
     end
-    # episode!(env, RandomPolicy(), stepfunc = render)
 end
 
-
-# --------------------------------------------------------------
 
 
 function __init__()
