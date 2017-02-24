@@ -2,13 +2,12 @@
 language: julia
 os:
   - linux
-  - osx
 julia:
   - release
   - nightly
 notifications:
   email: true
 # uncomment the following lines to override the default test script
-script:
- - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
- - julia -e 'Pkg.clone(pwd()); Pkg.build("OpenAIGym"); Pkg.clone("https://github.com/tbreloff/Reinforce.jl"); Pkg.test("OpenAIGym"; coverage=true)'
+# script:
+#  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+#  - julia -e 'Pkg.clone(pwd()); Pkg.build("OpenAIGym"); Pkg.test("OpenAIGym"; coverage=true)'

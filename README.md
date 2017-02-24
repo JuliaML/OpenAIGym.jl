@@ -1,6 +1,6 @@
 # OpenAIGym
 
-[![Build Status](https://travis-ci.org/tbreloff/OpenAIGym.jl.svg?branch=master)](https://travis-ci.org/tbreloff/OpenAIGym.jl)
+[![Build Status](https://travis-ci.org/JuliaML/OpenAIGym.jl.svg?branch=master)](https://travis-ci.org/JuliaML/OpenAIGym.jl) [![Gitter](https://badges.gitter.im/reinforcejl/Lobby.svg)](https://gitter.im/reinforcejl/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 #### Author: Thomas Breloff (@tbreloff)
 
@@ -146,17 +146,17 @@ using MetaPkg
 MetaPkg.add("MetaRL")
 ```
 
-which will install OpenAIGym, [Reinforce.jl](https://github.com/tbreloff/Reinforce.jl), and the [JuliaML](https://github.com/JuliaML) Learn ecosystem.  You might also want to install the [Plots](https://github.com/tbreloff/Plots.jl) ecosystem with `MetaPkg.add("MetaPlots")`.
+which will install OpenAIGym, [Reinforce.jl](https://github.com/JuliaML/Reinforce.jl), and the [JuliaML](https://github.com/JuliaML) Learn ecosystem.  You might also want to install the [Plots](https://github.com/JuliaPlots/Plots.jl) ecosystem with `MetaPkg.add("MetaPlots")`.
 
 
 To do the install manually, add this julia package:
 
 ```julia
-Pkg.clone("https://github.com/tbreloff/OpenAIGym.jl.git")
+Pkg.clone("https://github.com/JuliaML/OpenAIGym.jl.git")
 ```
 
-and until it's registered in METADATA, you'll also need to manually install [Reinforce.jl](https://github.com/tbreloff/Reinforce.jl):
+and until it's registered in METADATA, you'll also need to manually install [Reinforce.jl](https://github.com/JuliaML/Reinforce.jl):
 
 ```julia
-Pkg.clone("https://github.com/tbreloff/Reinforce.jl.git")
+Pkg.clone("https://github.com/JuliaML/Reinforce.jl.git")
 ```
