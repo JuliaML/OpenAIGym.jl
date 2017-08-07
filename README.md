@@ -105,7 +105,7 @@ then install gym from the command line:
 cd /opt
 git clone https://github.com/openai/gym
 cd gym
-~/.julia/v0.5/Conda/deps/usr/bin/pip install -e .[all]
+~/.julia/v0.6/Conda/deps/usr/bin/pip install -e .[all]
 ```
 
 For additional environments, use a similar process.  For example, here's how I installed [Soccer](https://github.com/openai/gym-soccer) on my Ubuntu machine:
@@ -122,18 +122,18 @@ make install
 cd /opt
 git clone https://github.com/openai/gym-soccer
 cd gym-soccer
-~/.julia/v0.5/Conda/deps/usr/bin/pip install -e .
+~/.julia/v0.6/Conda/deps/usr/bin/pip install -e .
 ```
 
 and here's how I installed the ones based on Box2D (for example BipedalWalker-v2) since it didn't work out of the box (due to [this issue](https://github.com/openai/gym/issues/100)):
 
 ```
-~/.julia/v0.5/Conda/deps/usr/bin/pip uninstall box2d-py
+~/.julia/v0.6/Conda/deps/usr/bin/pip uninstall box2d-py
 sudo apt-get install build-essential python-dev swig
 cd /opt/
 git clone https://github.com/pybox2d/pybox2d
 cd pybox2d/
-~/.julia/v0.5/Conda/deps/usr/bin/pip install -e .
+~/.julia/v0.6/Conda/deps/usr/bin/pip install -e .
 ```
 
 ### Install OpenAIGym and Reinforce
@@ -143,10 +143,10 @@ The easiest way to get started is with [MetaPkg](https://github.com/tbreloff/Met
 ```julia
 Pkg.clone("https://github.com/tbreloff/MetaPkg.jl")
 using MetaPkg
-MetaPkg.add("MetaRL")
+MetaPkg.meta_add("MetaRL")
 ```
 
-which will install OpenAIGym, [Reinforce.jl](https://github.com/JuliaML/Reinforce.jl), and the [JuliaML](https://github.com/JuliaML) Learn ecosystem.  You might also want to install the [Plots](https://github.com/JuliaPlots/Plots.jl) ecosystem with `MetaPkg.add("MetaPlots")`.
+which will install OpenAIGym, [Reinforce.jl](https://github.com/JuliaML/Reinforce.jl), and the [JuliaML](https://github.com/JuliaML) Learn ecosystem.  You might also want to install the [Plots](https://github.com/JuliaPlots/Plots.jl) ecosystem with `MetaPkg.meta_add("MetaPlots")`.
 
 
 To do the install manually, add this julia package:
