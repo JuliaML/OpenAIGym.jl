@@ -22,7 +22,7 @@ const _py_envs = Dict{String,Any}()
 abstract type AbstractGymEnv <: AbstractEnvironment end
 
 "A simple wrapper around the OpenAI gym environments to add to the Reinforce framework"
-type GymEnv <: AbstractGymEnv
+mutable struct GymEnv <: AbstractGymEnv
     name::String
     pyenv  # the python "env" object
     state
@@ -45,7 +45,7 @@ end
 
 function gym(name::AbstractString)
     env = if name in ("Soccer-v0", "SoccerEmptyGoal-v0")
-        @pyimport gym_soccer
+        Base.copy!(gym_soccer, pyimport("gym_soccer"))
         get!(_py_envs, name) do
             GymEnv(name, pygym[:make](name))
         end
@@ -127,8 +127,12 @@ end
 
 
 
+global const pygym = PyNULL()
+global const pysoccer = PyNULL()
+
 function __init__()
-    global const pygym = pyimport("gym")
+    # the copy! puts the gym module into `pygym`, handling python ref-counting
+    Base.copy!(pygym, pyimport("gym"))
 end
 
 end # module
