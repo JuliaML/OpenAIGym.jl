@@ -40,7 +40,7 @@ end
     pacman = GymEnv("MsPacman-v4")
     pacmannf = GymEnv("MsPacmanNoFrameskip-v4")
     cartpole = GymEnv("CartPole-v0")
-    bj = GymEnv("Blackjack-v0")
+    bj = GymEnv("Blackjack-v0", stateT=PyAny)
 
     allenvs = [pong, pongnf, pacman, pacmannf, cartpole, bj]
     eps2trial = Dict(pong=>2, pongnf=>1, pacman=>2, pacmannf=>1, cartpole=>400, bj=>30000)
