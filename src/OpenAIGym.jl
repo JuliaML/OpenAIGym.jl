@@ -30,6 +30,7 @@ mutable struct GymEnv{T} <: AbstractGymEnv
     pyreset::PyObject # the python env.reset function
     pystate::PyObject # the state array object referenced by the PyArray state.o
     pystepres::PyObject # used to make stepping the env slightly more efficient
+    pytplres::PyObject  # used to make stepping the env slightly more efficient
     info::PyObject    # store it as a PyObject for speed, since often unused
     state::T
     reward::Float64
@@ -141,13 +142,10 @@ function Reinforce.step!(env::GymEnv{T}, a) where T <: PyArray
     pyact = pyaction(a)
     pycall!(env.pystepres, env.pystep, PyObject, pyact)
 
-    env.pystate, r, env.done, env.info =
-        convert(Tuple{PyObject, Float64, Bool, PyObject}, env.pystepres)
-
+    unsafe_gettpl!(env.pystate, env.pystepres, PyObject, 0)
     setdata!(env.state, env.pystate)
 
-    env.total_reward += r
-    return (r, env.state)
+    return gymstep!(env)
 end
 
 """
@@ -157,11 +155,16 @@ function Reinforce.step!(env::GymEnv{T}, a) where T
     pyact = pyaction(a)
     pycall!(env.pystepres, env.pystep, PyObject, pyact)
 
-    env.pystate, r, env.done, env.info =
-        convert(Tuple{PyObject, Float64, Bool, PyObject}, env.pystepres)
-
+    unsafe_gettpl!(env.pystate, env.pystepres, PyObject, 0)
     env.state = convert(T, env.pystate)
 
+    return gymstep!(env)
+end
+
+@inline function gymstep!(env)
+    r = unsafe_gettpl!(env.pytplres, env.pystepres, Float64, 1)
+    env.done = unsafe_gettpl!(env.pytplres, env.pystepres, Bool, 2)
+    unsafe_gettpl!(env.info, env.pystepres, PyObject, 3)
     env.total_reward += r
     return (r, env.state)
 end
