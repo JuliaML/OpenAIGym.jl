@@ -113,7 +113,7 @@ pyaction(a) = a
 `reset!` for PyArray state types
 """
 function Reinforce.reset!(env::GymEnv{T}) where T <: PyArray
-    env.state = PyArray(pycall!(env.pystate, env.pyreset, PyObject))
+    setdata!(env.state, pycall!(env.pystate, env.pyreset, PyObject))
     return gymreset!(env)
 end
 
@@ -144,7 +144,7 @@ function Reinforce.step!(env::GymEnv{T}, a) where T <: PyArray
     env.pystate, r, env.done, env.info =
         convert(Tuple{PyObject, Float64, Bool, PyObject}, env.pystepres)
 
-    env.state = PyArray(env.pystate)
+    setdata!(env.state, env.pystate)
 
     env.total_reward += r
     return (r, env.state)
