@@ -102,7 +102,7 @@ end
 pyaction(a::Vector) = Any[pyaction(ai) for ai=a]
 pyaction(a) = a
 
-function Reinforce.step!(env::GymEnv, s, a)
+function Reinforce.step!(env::GymEnv, a)
     # info("Going to take action: $a")
     pyact = pyaction(a)
     s′, r, env.done, env.info = env.pyenv[:step](pyact)
