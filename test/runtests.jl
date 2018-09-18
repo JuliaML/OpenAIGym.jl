@@ -9,7 +9,6 @@ how many steps were made. Doesn't time the `reset!` or the first step of each
 episode (since higher chance that it's slower/faster than the rest, and we want
 to compare the average time taken for each step as fairly as possible)
 """
-# function time_steps(env::GymEnv{T}, num_eps::Int) where T
 function time_steps(env::GymEnv, num_eps::Int)
     t = 0.0
     steps = 0
@@ -25,7 +24,6 @@ end
 Steps through an episode until it's `done`
 assumes env has been `reset!`
 """
-# function epstep(env::GymEnv{T}) where T
 function epstep(env::GymEnv)
     steps = 0
     while !env.done
@@ -45,7 +43,7 @@ end
     bj = GymEnv("Blackjack-v0")
 
     allenvs = [pong, pongnf, pacman, pacmannf, cartpole, bj]
-    eps2trial = Dict(pong=>4, pongnf=>4, pacman=>9, pacmannf=>9, cartpole=>5000, bj=>30000)
+    eps2trial = Dict(pong=>1, pongnf=>1, pacman=>2, pacmannf=>2, cartpole=>100, bj=>30000)
     atarienvs = [pong, pongnf, pacman, pacmannf]
     envs = allenvs
 
@@ -53,7 +51,9 @@ end
         # check they all work - no errors == no worries
         println("------------------------------ Check envs load ------------------------------")
         for (i, env) in enumerate(envs)
-            @show env.name env.pyenv a = rand(env.actions)|>OpenAIGym.pyaction PyObject(a)|>pytypeof
+            a = rand(env.actions) |> OpenAIGym.pyaction
+            action_type = a |> PyObject |> pytypeof
+            println("env.pyenv: $(env.pyenv) action_type: $action_type ex: $a")
             time_steps(env, 1)
             @test !ispynull(env.pyenv)
             println("------------------------------")
@@ -65,7 +65,7 @@ end
         for env in envs
             num_eps = eps2trial[env]
             steps, t = time_steps(env, num_eps)
-            @show env.name num_eps t steps
+            println("env.pyenv: $(env.pyenv) num_eps: $num_eps t: $t steps: $steps")
             println("microsecs/step (lower is better): ", t*1e6/steps)
             println("------------------------------")
         end
