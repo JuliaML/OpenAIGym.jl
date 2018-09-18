@@ -36,18 +36,15 @@ mutable struct GymEnv{T} <: AbstractGymEnv
     total_reward::Float64
     actions::AbstractSet
     done::Bool
-    function GymEnv(name, pyenv, stateT=PyArray)
-        pystate = pycall(pyenv["reset"], PyObject)
-        state = convert(stateT, pystate)
-        env = new{typeof(state)}(name, pyenv, pyenv["step"], pyenv["reset"],
+    function GymEnv{T}(name, pyenv, pystate, state) where T
+        env = new{T}(name, pyenv, pyenv["step"], pyenv["reset"],
                                  pystate, PyNULL(), PyNULL(), state)
         reset!(env)
         env
     end
 end
-GymEnv(name; stateT=PyArray) = gym(name; stateT=stateT)
 
-function gym(name::AbstractString; stateT=PyArray)
+function GymEnv(name; stateT=PyArray)
     env = if name in ("Soccer-v0", "SoccerEmptyGoal-v0")
         Base.copy!(gym_soccer, pyimport("gym_soccer"))
         get!(_py_envs, name) do
@@ -58,6 +55,13 @@ function gym(name::AbstractString; stateT=PyArray)
     end
     reset!(env)
     env
+end
+
+function GymEnv(name, pyenv, stateT)
+    pystate = pycall(pyenv["reset"], PyObject)
+    state = convert(stateT, pystate)
+    T = typeof(state)
+    GymEnv{T}(name, pyenv, pystate, state)
 end
 
 
@@ -109,7 +113,7 @@ pyaction(a) = a
 `reset!` for PyArray state types
 """
 function Reinforce.reset!(env::GymEnv{T}) where T <: PyArray
-    env.state = PyArray(pycall!(env.pystate, env.pyreset, PyObject)))
+    env.state = PyArray(pycall!(env.pystate, env.pyreset, PyObject))
     return gymreset!(env)
 end
 
