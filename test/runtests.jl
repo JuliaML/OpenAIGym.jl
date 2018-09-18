@@ -14,7 +14,7 @@ function time_steps(env::GymEnv, num_eps::Int)
     steps = 0
     for i in 1:num_eps
         reset!(env)
-        step!(env, rand(env.actions)) # ignore the first step - it might be slow?
+        # step!(env, rand(env.actions)) # ignore the first step - it might be slow?
         t += (@elapsed steps += epstep(env))
     end
     steps, t
@@ -43,7 +43,7 @@ end
     bj = GymEnv("Blackjack-v0")
 
     allenvs = [pong, pongnf, pacman, pacmannf, cartpole, bj]
-    eps2trial = Dict(pong=>1, pongnf=>1, pacman=>2, pacmannf=>2, cartpole=>100, bj=>30000)
+    eps2trial = Dict(pong=>2, pongnf=>1, pacman=>2, pacmannf=>1, cartpole=>400, bj=>30000)
     atarienvs = [pong, pongnf, pacman, pacmannf]
     envs = allenvs
 
@@ -86,7 +86,7 @@ end
         bj = gym.make("Blackjack-v0")
 
         allenvs = [pong, pongnf, pacman, pacmannf, cartpole, bj]
-        eps2trial = {pong: 4, pongnf: 4, pacman: 9, pacmannf: 9, cartpole: 5000, bj: 30000}
+        eps2trial = {pong: 2, pongnf: 1, pacman: 2, pacmannf: 1, cartpole: 400, bj: 30000}
         atarienvs = [pong, pongnf, pacman, pacmannf];
 
         envs = allenvs
