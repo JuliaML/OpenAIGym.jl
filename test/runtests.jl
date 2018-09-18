@@ -53,7 +53,7 @@ end
         for (i, env) in enumerate(envs)
             a = rand(env.actions) |> OpenAIGym.pyaction
             action_type = a |> PyObject |> pytypeof
-            println("env.pyenv: $(env.pyenv) action_type: $action_type ex: $a")
+            println("env.pyenv: $(env.pyenv) action_type: $action_type (e.g. $a)")
             time_steps(env, 1)
             @test !ispynull(env.pyenv)
             println("------------------------------")

@@ -117,16 +117,6 @@ Reinforce.finished(env::GymEnv, s′) = env.done
 
 # --------------------------------------------------------------
 
-
-function test_env(name::String = "CartPole-v0")
-    env = gym(name)
-    for sars′ in Episode(env, RandomPolicy())
-        render(env)
-    end
-end
-
-
-
 global const pygym = PyNULL()
 global const pysoccer = PyNULL()
 
