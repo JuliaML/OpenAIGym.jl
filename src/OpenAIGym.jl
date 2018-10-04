@@ -11,7 +11,7 @@ import Reinforce:
     KeyboardAction, KeyboardActionSet
 
 export
-    gym,
+    pygym,
     GymEnv,
     test_env,
     PyAny
@@ -37,9 +37,9 @@ mutable struct GymEnv{T} <: AbstractGymEnv
     total_reward::Float64
     actions::AbstractSet
     done::Bool
-    function GymEnv{T}(name, pyenv, pystate, state) where T
+    function GymEnv{T}(name, pyenv, pystate, state::T) where T
         env = new{T}(name, pyenv, pyenv["step"], pyenv["reset"],
-                                 pystate, PyNULL(), PyNULL(), state)
+                         pystate, PyNULL(), PyNULL(), PyNULL(), state)
         reset!(env)
         env
     end
@@ -54,7 +54,6 @@ function GymEnv(name; stateT=PyArray)
     else
         GymEnv(name, pygym[:make](name), stateT)
     end
-    reset!(env)
     env
 end
 
