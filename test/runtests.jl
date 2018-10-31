@@ -1,5 +1,6 @@
-using OpenAIGym, Compat.Test
+using OpenAIGym
 using PyCall
+using Test
 
 """
 `function time_steps(env::GymEnv{T}, num_eps::Int) where T`
