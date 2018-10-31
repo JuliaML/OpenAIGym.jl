@@ -1,13 +1,28 @@
 # Documentation: http://docs.travis-ci.com/user/languages/julia/
 language: julia
 
+script:
+    - julia -e 'using Pkg;
+                Pkg.activate(".");
+                Pkg.build();
+                Pkg.add("Conda");
+                using Conda;
+                Conda.add("numpy");
+                Conda.add("scipy==0.17.1");
+                ENV["PYTHONHOME"] = "";
+                Pkg.build("PyCall");'
+    - cat ~/.julia/packages/PyCall/0jMpb/deps/deps.jl
+    - ~/.julia/conda/3/bin/pip install 'gym[atari]'
+    - julia -e 'using Pkg;
+                Pkg.activate(".");
+                Pkg.test();'
+
 os:
   - linux
 
 julia:
   - 0.7
-  - release
-  - nightly
+  - 1.0
 
 notifications:
   email: false
