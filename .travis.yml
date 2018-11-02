@@ -14,7 +14,14 @@ script:
     - ~/.julia/conda/3/bin/pip install 'gym[atari]'
     - julia -e 'using Pkg;
                 Pkg.activate(".");
-                Pkg.test();'
+                Pkg.test(coverage = true);'
+
+after_success:
+    - julia -e 'using Pkg;
+                Pkg.activate(".");
+                Pkg.add("Coverage");
+                using Coverage;
+                Codecov.submit(process_folder())'
 
 os:
   - linux
