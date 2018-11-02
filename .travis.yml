@@ -11,7 +11,6 @@ script:
                 Conda.add("scipy==0.17.1");
                 ENV["PYTHONHOME"] = "";
                 Pkg.build("PyCall");'
-    - cat ~/.julia/packages/PyCall/0jMpb/deps/deps.jl
     - ~/.julia/conda/3/bin/pip install 'gym[atari]'
     - julia -e 'using Pkg;
                 Pkg.activate(".");
