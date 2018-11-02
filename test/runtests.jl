@@ -129,7 +129,10 @@ end
             with Timer():
                 steps, s = time_steps(env, num_eps)
             t = Timer.elapsed
-            print(f"{env} num_eps: {num_eps} t: {t} steps: {steps} \n microsecs/step (lower is better): {t*1e6/steps}")
+            print("{env} num_eps: {num_eps} t: {t} steps: {steps} \n"
+                  "microsecs/step (lower is better): {time}".format(
+                    env=env, num_eps=num_eps, t=t, steps=steps,
+                    time=t*1e6/steps))
             print("------------------------------")
         """
         println("------------------------------ End Python Speed Check ------------------------------")
