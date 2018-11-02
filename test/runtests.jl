@@ -27,9 +27,10 @@ assumes env has been `reset!`
 """
 function epstep(env::GymEnv)
     steps = 0
-    while !env.done
+    while true
         steps += 1
-        r, s = step!(env, rand(env.actions))
+        r, s′ = step!(env, rand(env.actions))
+        finished(env, s′) && break
     end
     steps
 end
