@@ -50,7 +50,6 @@ function GymEnv(name; stateT=PyArray)
     else
         GymEnv(name, pygym[:make](name), stateT)
     end
-    reset!(env)
     env
 end
 
