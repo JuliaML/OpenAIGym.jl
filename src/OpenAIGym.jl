@@ -42,7 +42,7 @@ end
 
 function gym(name::AbstractString)
     env = if name in ("Soccer-v0", "SoccerEmptyGoal-v0")
-        Base.copy!(gym_soccer, pyimport("gym_soccer"))
+        copy!(pysoccer, pyimport("gym_soccer"))
         get!(_py_envs, name) do
             GymEnv(name, pygym[:make](name))
         end
@@ -109,17 +109,17 @@ function Reinforce.step!(env::GymEnv, a)
     r, s′
 end
 
-Reinforce.finished(env::GymEnv) = env.done
+Reinforce.finished(env::GymEnv)     = env.done
 Reinforce.finished(env::GymEnv, s′) = env.done
 
 # --------------------------------------------------------------
 
-global const pygym = PyNULL()
-global const pysoccer = PyNULL()
+const pygym    = PyNULL()
+const pysoccer = PyNULL()
 
 function __init__()
     # the copy! puts the gym module into `pygym`, handling python ref-counting
-    Base.copy!(pygym, pyimport("gym"))
+    copy!(pygym, pyimport("gym"))
 end
 
 end # module
