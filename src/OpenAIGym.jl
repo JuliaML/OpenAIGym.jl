@@ -8,10 +8,7 @@ import Reinforce:
     KeyboardAction, KeyboardActionSet
 
 export
-    gym,
-    GymEnv,
-    test_env,
-    PyAny
+    GymEnv
 
 const _py_envs = Dict{String,Any}()
 
@@ -41,7 +38,9 @@ mutable struct GymEnv{T} <: AbstractGymEnv
     end
 end
 
-function GymEnv(name; stateT=PyArray)
+use_pyarray_state(envname) = !startswith(envname, "Blackjack")
+
+function GymEnv(name; stateT=(use_pyarray_state(name) ? PyArray : PyAny))
     env = if name in ("Soccer-v0", "SoccerEmptyGoal-v0")
         copy!(pysoccer, pyimport("gym_soccer"))
         get!(_py_envs, name) do
