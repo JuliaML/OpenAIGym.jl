@@ -107,23 +107,11 @@ pyaction(a::Vector) = Any[pyaction(ai) for ai=a]
 pyaction(a) = a
 
 """
-`reset!` for PyArray state types
+`reset!(env::GymEnv)` reset the environment
 """
-function Reinforce.reset!(env::GymEnv{T}) where T <: PyArray
-    env.state = PyArray(pycall!(env.pystate, env.pyreset, PyObject))
-    return gymreset!(env)
-end
-
-"""
-`reset!` for non PyArray state types
-"""
-function Reinforce.reset!(env::GymEnv{T}) where T
+function Reinforce.reset!(env::GymEnv)
     pycall!(env.pystate, env.pyreset, PyObject)
-    env.state = convert(T, env.pystate)
-    return gymreset!(env)
-end
-
-function gymreset!(env::GymEnv{T}) where T
+    convert_state!(env)
     env.reward = 0.0
     env.total_reward = 0.0
     env.actions = actions(env, nothing)
@@ -132,36 +120,26 @@ function gymreset!(env::GymEnv{T}) where T
 end
 
 """
-`step!` for PyArray state
+`step!(env::GymEnv, a)` take a step in the enviroment
 """
-function Reinforce.step!(env::GymEnv{T}, a) where T <: PyArray
+function Reinforce.step!(env::GymEnv, a)
     pyact = pyaction(a)
     pycall!(env.pystepres, env.pystep, PyObject, pyact)
 
     env.pystate, r, env.done, env.info =
         convert(Tuple{PyObject, Float64, Bool, PyObject}, env.pystepres)
 
-    env.state = PyArray(env.pystate)
+    convert_state!(env)
 
     env.total_reward += r
     return (r, env.state)
 end
 
-"""
-step! for non-PyArray state
-"""
-function Reinforce.step!(env::GymEnv{T}, a) where T
-    pyact = pyaction(a)
-    pycall!(env.pystepres, env.pystep, PyObject, pyact)
-
-    env.pystate, r, env.done, env.info =
-        convert(Tuple{PyObject, Float64, Bool, PyObject}, env.pystepres)
-
+convert_state!(env::GymEnv{T}) where T =
     env.state = convert(T, env.pystate)
 
-    env.total_reward += r
-    return (r, env.state)
-end
+convert_state!(env::GymEnv{<:PyArray}) =
+    env.state = PyArray(env.pystate)
 
 Reinforce.finished(env::GymEnv)     = env.done
 Reinforce.finished(env::GymEnv, s′) = env.done
