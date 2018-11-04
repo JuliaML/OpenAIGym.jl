@@ -8,9 +8,7 @@ import Reinforce:
     KeyboardAction, KeyboardActionSet
 
 export
-    gym,
-    GymEnv,
-    test_env
+    GymEnv
 
 const _py_envs = Dict{String,Any}()
 
@@ -19,38 +17,46 @@ const _py_envs = Dict{String,Any}()
 abstract type AbstractGymEnv <: AbstractEnvironment end
 
 "A simple wrapper around the OpenAI gym environments to add to the Reinforce framework"
-mutable struct GymEnv <: AbstractGymEnv
+mutable struct GymEnv{T} <: AbstractGymEnv
     name::String
-    pyenv  # the python "env" object
-    state
+    pyenv::PyObject   # the python "env" object
+    pystep::PyObject  # the python env.step function
+    pyreset::PyObject # the python env.reset function
+    pystate::PyObject # the state array object referenced by the PyArray state.o
+    pystepres::PyObject # used to make stepping the env slightly more efficient
+    info::PyObject    # store it as a PyObject for speed, since often unused
+    state::T
     reward::Float64
     total_reward::Float64
     actions::AbstractSet
     done::Bool
-    info::Dict
-    GymEnv(name,pyenv) = new(name,pyenv)
-end
-GymEnv(name) = gym(name)
-
-function Reinforce.reset!(env::GymEnv)
-    env.state = env.pyenv[:reset]()
-    env.reward = 0.0
-    env.total_reward = 0.0
-    env.actions = actions(env, nothing)
-    env.done = false
+    function GymEnv{T}(name, pyenv, pystate, state) where T
+        env = new{T}(name, pyenv, pyenv["step"], pyenv["reset"],
+                                 pystate, PyNULL(), PyNULL(), state)
+        reset!(env)
+        env
+    end
 end
 
-function gym(name::AbstractString)
+use_pyarray_state(envname) = !startswith(envname, "Blackjack")
+
+function GymEnv(name; stateT=(use_pyarray_state(name) ? PyArray : PyAny))
     env = if name in ("Soccer-v0", "SoccerEmptyGoal-v0")
         copy!(pysoccer, pyimport("gym_soccer"))
         get!(_py_envs, name) do
-            GymEnv(name, pygym[:make](name))
+            GymEnv(name, pygym[:make](name), stateT)
         end
     else
-        GymEnv(name, pygym[:make](name))
+        GymEnv(name, pygym[:make](name), stateT)
     end
-    reset!(env)
     env
+end
+
+function GymEnv(name, pyenv, stateT)
+    pystate = pycall(pyenv["reset"], PyObject)
+    state = convert(stateT, pystate)
+    T = typeof(state)
+    GymEnv{T}(name, pyenv, pystate, state)
 end
 
 
@@ -91,7 +97,6 @@ function actionset(A::PyObject)
     end
 end
 
-
 function Reinforce.actions(env::AbstractGymEnv, s′)
     actionset(env.pyenv[:action_space])
 end
@@ -99,15 +104,40 @@ end
 pyaction(a::Vector) = Any[pyaction(ai) for ai=a]
 pyaction(a) = a
 
-function Reinforce.step!(env::GymEnv, a)
-    # info("Going to take action: $a")
-    pyact = pyaction(a)
-    s′, r, env.done, env.info = env.pyenv[:step](pyact)
-    env.reward = r
-    env.total_reward += r
-    env.state = s′
-    r, s′
+"""
+`reset!(env::GymEnv)` reset the environment
+"""
+function Reinforce.reset!(env::GymEnv)
+    pycall!(env.pystate, env.pyreset, PyObject)
+    convert_state!(env)
+    env.reward = 0.0
+    env.total_reward = 0.0
+    env.actions = actions(env, nothing)
+    env.done = false
+    return env.state
 end
+
+"""
+`step!(env::GymEnv, a)` take a step in the enviroment
+"""
+function Reinforce.step!(env::GymEnv, a)
+    pyact = pyaction(a)
+    pycall!(env.pystepres, env.pystep, PyObject, pyact)
+
+    env.pystate, r, env.done, env.info =
+        convert(Tuple{PyObject, Float64, Bool, PyObject}, env.pystepres)
+
+    convert_state!(env)
+
+    env.total_reward += r
+    return (r, env.state)
+end
+
+convert_state!(env::GymEnv{T}) where T =
+    env.state = convert(T, env.pystate)
+
+convert_state!(env::GymEnv{<:PyArray}) =
+    env.state = PyArray(env.pystate)
 
 Reinforce.finished(env::GymEnv)     = env.done
 Reinforce.finished(env::GymEnv, s′) = env.done
