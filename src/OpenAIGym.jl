@@ -8,7 +8,8 @@ import Reinforce:
     KeyboardAction, KeyboardActionSet
 
 export
-    GymEnv
+    GymEnv,
+    render
 
 # --------------------------------------------------------------
 
@@ -61,6 +62,14 @@ end
 
 # --------------------------------------------------------------
 
+"""
+    render(env::AbstractGymEnv; mode = :human, close::Bool = false)
+
+# Arguments
+
+- `mode`: `:human`, `:rgb_array`, `:ansi`
+- `close::Bool`
+"""
 render(env::AbstractGymEnv, args...; kwargs...) =
     pycall(env.pyenv[:render], PyAny; kwargs...)
 
