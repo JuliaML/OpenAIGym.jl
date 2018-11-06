@@ -117,7 +117,9 @@ function Reinforce.reset!(env::GymEnv)
 end
 
 """
-`step!(env::GymEnv, a)` take a step in the enviroment
+    step!(env::GymEnv, a)
+
+take a step in the enviroment
 """
 function Reinforce.step!(env::GymEnv, a)
     pyact = pyaction(a)
@@ -131,6 +133,8 @@ function Reinforce.step!(env::GymEnv, a)
     env.total_reward += r
     return (r, env.state)
 end
+
+@inline Reinforce.step!(env::GymEnv, s, a) = step!(env, a)
 
 convert_state!(env::GymEnv{T}) where T =
     env.state = convert(T, env.pystate)
