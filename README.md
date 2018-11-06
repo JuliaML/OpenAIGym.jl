@@ -10,7 +10,29 @@ Collaboration welcome!
 
 ---
 
-### Installation
+## Installation
+
+### Install gym
+
+First install `gym`.
+Follow the instructions [here](https://gym.openai.com/docs) if you're using a system-wide python,
+or to use Conda.jl:
+
+```julia
+using Pkg
+Pkg.add("PyCall")
+withenv("PYTHON" => "") do
+   Pkg.build("PyCall")
+end
+```
+
+then install gym from the command line:
+
+```
+~/.julia/conda/3/bin/pip install 'gym[all]'
+```
+
+### Install OpenAIGym.jl
 
 ```julia
 julia> using Pkg
@@ -18,7 +40,7 @@ julia> using Pkg
 julia> Pkg.add("https://github.com/JuliaML/OpenAIGym.jl.git")
 ```
 
-### Hello world!
+## Hello world!
 
 ```julia
 using OpenAIGym
@@ -72,6 +94,7 @@ for i_episode in xrange(20):
         # print observation
         action = env.action_space.sample()
         observation, reward, done, info = env.step(action)
+        env.render()
         total_reward += reward
         if done:
             print "Episode {} finished after {} timesteps. Total reward: {}".format(i_episode, t+1, total_reward)
@@ -99,41 +122,4 @@ for (s, a, r, s′) in ep
 end
 R = ep.total_reward
 N = ep.niter
-```
-
----
-
-### Install gym
-
-First install `gym`. Follow the instructions [here](https://gym.openai.com/docs) if you're using a system-wide python, or to use Conda.jl:
-
-```julia
-Pkg.add("PyCall")
-withenv("PYTHON" => "") do
-   Pkg.build("PyCall")
-end
-```
-
-then install gym from the command line:
-
-```
-~/.julia/conda/3/bin/pip install 'gym[all]'
-```
-
-For additional environments, use a similar process.
-For example, here's how I installed [Soccer](https://github.com/openai/gym-soccer) on my Ubuntu machine:
-
-```
-cd /opt
-git clone https://github.com/LARG/HFO
-cd HFO
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j4
-make install
-
-cd /opt
-git clone https://github.com/openai/gym-soccer
-cd gym-soccer
-~/.julia/conda/3/bin/pip install -e .
 ```
