@@ -22,7 +22,7 @@ julia> Pkg.add("https://github.com/JuliaML/OpenAIGym.jl.git")
 
 ```julia
 using OpenAIGym
-env = GymEnv("CartPole-v0")
+env = GymEnv(:CartPole, :v0)
 for i ∈ 1:20
   T = 0
   R = run_episode(env, RandomPolicy()) do (s, a, r, s′)
