@@ -59,6 +59,14 @@ function GymEnv(name::Symbol, ver::Symbol, pyenv, stateT)
     GymEnv{T}(name, ver, pyenv, pystate, state)
 end
 
+function Base.show(io::IO, env::GymEnv)
+  println(io, "GymEnv $(env.name)-$(env.ver)")
+  if haskey(env.pyenv, :class_name)
+    println(io, "  $(env.pyenv[:class_name]())")
+  end
+  println(io, "  r  = $(env.reward)")
+  print(  io, "  ∑r = $(env.total_reward)")
+end
 
 # --------------------------------------------------------------
 
