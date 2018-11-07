@@ -48,7 +48,7 @@ env = GymEnv(:CartPole, :v0)
 for i ∈ 1:20
   T = 0
   R = run_episode(env, RandomPolicy()) do (s, a, r, s′)
-    OpenAIGym.render(env)
+    render(env)
     T += 1
   end
   @info("Episode $i finished after $T steps. Total reward: $R")
