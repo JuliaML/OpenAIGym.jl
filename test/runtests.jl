@@ -145,5 +145,26 @@ end
             print("------------------------------")
         """
         println("------------------------------ End Python Speed Check ------------------------------")
-    end
+    end  # @testset "python speed test"
+
+    @testset "Base.show" begin
+      let
+        io = IOBuffer()
+        env = GymEnv(:MsPacman, :v4)
+        show(io, env)
+        @test String(take!(io)) == "GymEnv MsPacman-v4\n" *
+                                   "  TimeLimit\n" *
+                                   "  r  = 0.0\n" *
+                                   "  ∑r = 0.0"
+      end
+
+      let
+        io = IOBuffer()
+        env = GymEnv(:Blackjack)
+        show(io, env)
+        @test String(take!(io)) == "GymEnv Blackjack-v0\n" *
+                                   "  r  = 0.0\n" *
+                                   "  ∑r = 0.0"
+      end
+    end  # @testset "Base.show"
 end
