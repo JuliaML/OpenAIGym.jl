@@ -37,7 +37,7 @@ then install gym from the command line:
 ```julia
 julia> using Pkg
 
-julia> Pkg.add("https://github.com/JuliaML/OpenAIGym.jl.git")
+julia> Pkg.add("OpenAIGym")
 ```
 
 ## Hello world!
