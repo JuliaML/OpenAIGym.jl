@@ -29,8 +29,10 @@ end
 then install gym from the command line:
 
 ```
-~/.julia/conda/3/bin/pip install 'gym[all]'
+~/.julia/conda/3/bin/pip install 'gym[all]==0.11.0'
 ```
+
+We only test with gym v0.11.0 at this moment.
 
 ### Install OpenAIGym.jl
 
