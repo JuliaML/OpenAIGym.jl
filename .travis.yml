@@ -10,8 +10,9 @@ script:
                 Conda.add("numpy");
                 Conda.add("scipy==0.17.1");
                 ENV["PYTHONHOME"] = "";
+                Conda.add("python=3.6");
                 Pkg.build("PyCall");'
-    - ~/.julia/conda/3/bin/pip install 'gym[atari]'
+    - ~/.julia/conda/3/bin/pip install 'gym[atari]==0.11.0'
     - julia -e 'using Pkg;
                 Pkg.activate(".");
                 Pkg.test(coverage = true);'
