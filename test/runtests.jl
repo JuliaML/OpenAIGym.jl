@@ -77,6 +77,7 @@ end
             steps, t = time_steps(env, num_eps)
             println("env.pyenv: $(env.pyenv) num_eps: $num_eps t: $t steps: $steps")
             println("microsecs/step (lower is better): ", t*1e6/steps)
+            close(env)
             println("------------------------------")
         end
         println("------------------------------ End Julia Speed Check ------------------------------\n")

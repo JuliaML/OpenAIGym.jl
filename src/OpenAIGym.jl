@@ -9,7 +9,8 @@ import Reinforce:
 
 export
     GymEnv,
-    render
+    render,
+    close
 
 # --------------------------------------------------------------
 
@@ -71,12 +72,19 @@ end
 # --------------------------------------------------------------
 
 """
-    render(env::AbstractGymEnv; mode = :human, close::Bool = false)
+    close(env::AbstractGymEnv)
+"""
+Base.close(env::AbstractGymEnv) =
+	!ispynull(env.pyenv) && env.pyenv[:close]()
+
+# --------------------------------------------------------------
+
+"""
+    render(env::AbstractGymEnv; mode = :human)
 
 # Arguments
 
 - `mode`: `:human`, `:rgb_array`, `:ansi`
-- `close::Bool`
 """
 render(env::AbstractGymEnv, args...; kwargs...) =
     pycall(env.pyenv[:render], PyAny; kwargs...)
