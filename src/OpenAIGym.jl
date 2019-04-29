@@ -2,6 +2,7 @@ module OpenAIGym
 
 using PyCall
 using PyCall: setdata!
+import PyCall: hasproperty
 
 using Reexport
 @reexport using Reinforce
@@ -10,9 +11,9 @@ import Reinforce:
     KeyboardAction, KeyboardActionSet
 
 export
-    GymEnv
-
-const _py_envs = Dict{String,Any}()
+    GymEnv,
+    render,
+    close
 
 # --------------------------------------------------------------
 
@@ -20,7 +21,8 @@ abstract type AbstractGymEnv <: AbstractEnvironment end
 
 "A simple wrapper around the OpenAI gym environments to add to the Reinforce framework"
 mutable struct GymEnv{T} <: AbstractGymEnv
-    name::String
+    name::Symbol
+    ver::Symbol
     pyenv::PyObject   # the python "env" object
     pystep::PyObject  # the python env.step function
     pyreset::PyObject # the python env.reset function
@@ -32,55 +34,78 @@ mutable struct GymEnv{T} <: AbstractGymEnv
     total_reward::Float64
     actions::AbstractSet
     done::Bool
-    function GymEnv{T}(name, pyenv, pystate, state) where T
-        env = new{T}(name, pyenv, pyenv["step"], pyenv["reset"],
+    function GymEnv{T}(name, ver, pyenv, pystate, state) where T
+        env = new{T}(name, ver, pyenv, pyenv."step", pyenv."reset",
                                  pystate, PyNULL(), PyNULL(), state)
         reset!(env)
         env
     end
 end
 
-use_pyarray_state(envname) = !startswith(envname, "Blackjack")
+use_pyarray_state(envname::Symbol) = !(envname ∈ (:Blackjack,))
 
-function GymEnv(name; stateT=(use_pyarray_state(name) ? PyArray : PyAny))
-    env = if name in ("Soccer-v0", "SoccerEmptyGoal-v0")
+function GymEnv(name::Symbol, ver::Symbol = :v0;
+                stateT = ifelse(use_pyarray_state(name), PyArray, PyAny))
+    if PyCall.ispynull(pysoccer) && name ∈ (:Soccer, :SoccerEmptyGoal)
         copy!(pysoccer, pyimport("gym_soccer"))
-        get!(_py_envs, name) do
-            GymEnv(name, pygym[:make](name), stateT)
-        end
-    else
-        GymEnv(name, pygym[:make](name), stateT)
     end
-    env
+
+    GymEnv(name, ver, pygym.make("$name-$ver"), stateT)
 end
 
-function GymEnv(name, pyenv, stateT)
-    pystate = pycall(pyenv["reset"], PyObject)
+GymEnv(name::AbstractString; kwargs...) =
+    GymEnv(Symbol.(split(name, '-', limit = 2))...; kwargs...)
+
+function GymEnv(name::Symbol, ver::Symbol, pyenv, stateT)
+    pystate = pycall(pyenv."reset", PyObject)
     state = convert(stateT, pystate)
     T = typeof(state)
-    GymEnv{T}(name, pyenv, pystate, state)
+    GymEnv{T}(name, ver, pyenv, pystate, state)
 end
 
+function Base.show(io::IO, env::GymEnv)
+  println(io, "GymEnv $(env.name)-$(env.ver)")
+  if hasproperty(env.pyenv, :class_name)
+    println(io, "  $(env.pyenv.class_name())")
+  end
+  println(io, "  r  = $(env.reward)")
+  print(  io, "  ∑r = $(env.total_reward)")
+end
 
 # --------------------------------------------------------------
 
+"""
+    close(env::AbstractGymEnv)
+"""
+Base.close(env::AbstractGymEnv) =
+	!ispynull(env.pyenv) && env.pyenv.close()
+
+# --------------------------------------------------------------
+
+"""
+    render(env::AbstractGymEnv; mode = :human)
+
+# Arguments
+
+- `mode`: `:human`, `:rgb_array`, `:ansi`
+"""
 render(env::AbstractGymEnv, args...; kwargs...) =
-    pycall(env.pyenv[:render], PyAny; kwargs...)
+    pycall(env.pyenv.render, PyAny; kwargs...)
 
 # --------------------------------------------------------------
 
 
 function actionset(A::PyObject)
-    if haskey(A, :n)
+    if hasproperty(A, :n)
         # choose from n actions
-        DiscreteSet(0:A[:n]-1)
-    elseif haskey(A, :spaces)
+        DiscreteSet(0:A.n-1)
+    elseif hasproperty(A, :spaces)
         # a tuple of action sets
-        sets = [actionset(a) for a in A[:spaces]]
+        sets = [actionset(a) for a in A.spaces]
         TupleSet(sets...)
-    elseif haskey(A, :high)
+    elseif hasproperty(A, :high)
         # continuous interval
-        IntervalSet{Vector{Float64}}(A[:low], A[:high])
+        IntervalSet{Vector{Float64}}(A.low, A.high)
         # if A[:shape] == (1,)  # for now we only support 1-length vectors
         #     IntervalSet{Float64}(A[:low][1], A[:high][1])
         # else
@@ -89,9 +114,9 @@ function actionset(A::PyObject)
         #     # error("Unsupported shape for IntervalSet: $(A[:shape])")
         #     [IntervalSet{Float64}(lo[i], hi[i]) for i=1:length(lo)]
         # end
-    elseif haskey(A, :actions)
+    elseif hasproperty(A, :actions)
         # Hardcoded
-        TupleSet(DiscreteSet(A[:actions]))
+        TupleSet(DiscreteSet(A.actions))
     else
         @show A
         @show keys(A)
@@ -100,7 +125,7 @@ function actionset(A::PyObject)
 end
 
 function Reinforce.actions(env::AbstractGymEnv, s′)
-    actionset(env.pyenv[:action_space])
+    actionset(env.pyenv.action_space)
 end
 
 pyaction(a::Vector) = Any[pyaction(ai) for ai=a]
@@ -120,7 +145,9 @@ function Reinforce.reset!(env::GymEnv)
 end
 
 """
-`step!(env::GymEnv, a)` take a step in the enviroment
+    step!(env::GymEnv, a)
+
+take a step in the enviroment
 """
 function Reinforce.step!(env::GymEnv, a)
     pyact = pyaction(a)
@@ -134,6 +161,8 @@ function Reinforce.step!(env::GymEnv, a)
     env.total_reward += r
     return (r, env.state)
 end
+
+@inline Reinforce.step!(env::GymEnv, s, a) = step!(env, a)
 
 convert_state!(env::GymEnv{T}) where T =
     env.state = convert(T, env.pystate)

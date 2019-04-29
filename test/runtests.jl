@@ -37,17 +37,25 @@ end
 
 @testset "Gym Basics" begin
 
-    pong = GymEnv("Pong-v4")
-    pongnf = GymEnv("PongNoFrameskip-v4")
-    pacman = GymEnv("MsPacman-v4")
-    pacmannf = GymEnv("MsPacmanNoFrameskip-v4")
-    cartpole = GymEnv("CartPole-v0")
-    bj = GymEnv("Blackjack-v0")
+    pong = GymEnv(:Pong, :v4)
+    pongnf = GymEnv(:PongNoFrameskip, :v4)
+    pacman = GymEnv(:MsPacman, :v4)
+    pacmannf = GymEnv(:MsPacmanNoFrameskip, :v4)
+    cartpole = GymEnv(:CartPole)
+    bj = GymEnv(:Blackjack)
 
     allenvs = [pong, pongnf, pacman, pacmannf, cartpole, bj]
     eps2trial = Dict(pong=>2, pongnf=>1, pacman=>2, pacmannf=>1, cartpole=>400, bj=>30000)
     atarienvs = [pong, pongnf, pacman, pacmannf]
     envs = allenvs
+
+    @testset "string constructor" begin
+        for name ∈ ("Pong-v4", "PongNoFrameskip-v4", "MsPacman-v4",
+                    "MsPacmanNoFrameskip-v4", "CartPole-v0", "Blackjack-v0")
+            env = GymEnv(name)
+            @test !PyCall.ispynull(env.pyenv)
+        end
+    end
 
     @testset "envs load" begin
         # check they all work - no errors == no worries
@@ -69,6 +77,7 @@ end
             steps, t = time_steps(env, num_eps)
             println("env.pyenv: $(env.pyenv) num_eps: $num_eps t: $t steps: $steps")
             println("microsecs/step (lower is better): ", t*1e6/steps)
+            close(env)
             println("------------------------------")
         end
         println("------------------------------ End Julia Speed Check ------------------------------\n")
@@ -137,5 +146,26 @@ end
             print("------------------------------")
         """
         println("------------------------------ End Python Speed Check ------------------------------")
-    end
+    end  # @testset "python speed test"
+
+    @testset "Base.show" begin
+      let
+        io = IOBuffer()
+        env = GymEnv(:MsPacman, :v4)
+        show(io, env)
+        @test String(take!(io)) == "GymEnv MsPacman-v4\n" *
+                                   "  TimeLimit\n" *
+                                   "  r  = 0.0\n" *
+                                   "  ∑r = 0.0"
+      end
+
+      let
+        io = IOBuffer()
+        env = GymEnv(:Blackjack)
+        show(io, env)
+        @test String(take!(io)) == "GymEnv Blackjack-v0\n" *
+                                   "  r  = 0.0\n" *
+                                   "  ∑r = 0.0"
+      end
+    end  # @testset "Base.show"
 end
