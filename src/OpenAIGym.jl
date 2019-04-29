@@ -1,7 +1,9 @@
 module OpenAIGym
 
 using PyCall
+using PyCall: setdata!
 import PyCall: hasproperty
+
 using Reexport
 @reexport using Reinforce
 import Reinforce:
@@ -166,7 +168,7 @@ convert_state!(env::GymEnv{T}) where T =
     env.state = convert(T, env.pystate)
 
 convert_state!(env::GymEnv{<:PyArray}) =
-    env.state = PyArray(env.pystate)
+    setdata!(env.state, env.pystate)
 
 Reinforce.finished(env::GymEnv)     = env.done
 Reinforce.finished(env::GymEnv, s′) = env.done
