@@ -14,25 +14,40 @@ Collaboration welcome!
 
 ### Install gym
 
-First install `gym`.
-Follow the instructions [here](https://gym.openai.com/docs) if you're using a system-wide python,
-or to use Conda.jl:
+First install `gym`. If you use Python on your system, and wish to use the same installation of gym in both Python and Julia, follow the system-wide instructions. If you only need `gym` within Julia, follow the Julia-specific instructions.
 
-```julia
-using Pkg
-Pkg.add("PyCall")
-withenv("PYTHON" => "") do
-   Pkg.build("PyCall")
-end
-```
+1. System-wide Python
 
-then install gym from the command line:
+    Install gym into Python, following the instructions [here](https://gym.openai.com/docs).
 
-```
-~/.julia/conda/3/bin/pip install 'gym[all]==0.11.0'
-```
+    In Julia, ensure that the Python environment variable points to the correct executable, and build [PyCall](https://github.com/JuliaPy/PyCall.jl): 
+    ```julia
+    julia> ENV["PYTHON"] = "... path of the python executable ..."
+    julia> # ENV["PYTHON"] = "C:\\Python37-x64\\python.exe" # example for Windows
+    julia> # ENV["PYTHON"] = "/usr/bin/python3.7"           # example for *nix/Mac
+    julia> Pkg.build("PyCall")
+    ```
+    Finally, re-launch Julia.
 
-We only test with gym v0.11.0 at this moment.
+2. Julia-specific Python
+
+    Julia also has its own miniconda installation of Python, via [Conda.jl](https://github.com/JuliaPy/Conda.jl):
+
+    ```julia
+    using Pkg
+    Pkg.add("PyCall")
+    withenv("PYTHON" => "") do
+       Pkg.build("PyCall")
+    end
+    ```
+
+    then install gym from the command line:
+
+    ```
+    ~/.julia/conda/3/bin/pip install 'gym[all]==0.11.0'
+    ```
+
+    We only test with gym v0.11.0 at this moment.
 
 ### Install OpenAIGym.jl
 
@@ -57,7 +72,7 @@ for i ∈ 1:20
 end
 ```
 
-If everything works you should see output like this:
+(The `′` character is a prime; if using the REPL, type `\prime`.) If everything works you should see output like this:
 
 ```
 [ Info: Episode 1 finished after 10 steps. Total reward: 10.0
