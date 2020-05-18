@@ -8,7 +8,7 @@ import Reinforce:
     MouseAction, MouseActionSet,
     KeyboardAction, KeyboardActionSet
 
-import Reinforce.Learnbase:
+import Reinforce.LearnBase:
     IntervalSet
 
 export
