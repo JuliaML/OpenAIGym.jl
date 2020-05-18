@@ -8,6 +8,9 @@ import Reinforce:
     MouseAction, MouseActionSet,
     KeyboardAction, KeyboardActionSet
 
+import Reinforce.Learnbase:
+    IntervalSet
+
 export
     GymEnv,
     render,
