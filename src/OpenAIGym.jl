@@ -9,7 +9,7 @@ import Reinforce:
     KeyboardAction, KeyboardActionSet
 
 import Reinforce.LearnBase:
-    IntervalSet
+    IntervalSet, DiscreteSet
 
 export
     GymEnv,
