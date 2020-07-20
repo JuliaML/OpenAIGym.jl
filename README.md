@@ -70,6 +70,7 @@ for i ∈ 1:20
   end
   @info("Episode $i finished after $T steps. Total reward: $R")
 end
+close(env)
 ```
 
 (The `′` character is a prime; if using the REPL, type `\prime`.) If everything works you should see output like this:
